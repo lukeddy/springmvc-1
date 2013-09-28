@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="weibo" default="deploy" basedir=".">
+	<!-- 源码及第三方包 -->
+	
+	<property name="lib" value="lib" />
+	<property name="src" value="src" />
+	<property name="dist" value="dist"/>
+	<property name="conf" value="config"></property>
+	<!-- 编译属性 -->
+	<property name="build" value="build" />
+	<property name="build.classes" value="${build}/classes" />
+	<!-- WEB属性 -->
+	<property name="web" value="WebContent" />
+	<property name="web.info" value="${web}/WEB-INF" />
+	<property name="web.classes" value="${web.info}/classes" />
+	<property name="web.lib" value="${web.info}/lib" />
+	<!-- 测试及发布属性 -->
+	<property name="jar.name" value="weibo.jar" />
+	<property name="war.name" value="weibo.war" />
+	<!-- 编译类路径 -->
+	<path id="classpath">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${java.home}/lib/tools.jar" />
+		<pathelement location="${build.classes}" />
+		<pathelement location="${runtime.conf}" />
+	</path>
+	<!-- 编译 depends="checkDependency" -->
+	<target name="build" >
+		<mkdir dir="${build}" />
+		<mkdir dir="${build.classes}" />
+		<mkdir dir="${build.classes}" />
+		<!-- 编译成class文件 -->
+		<javac srcdir="${src}" destdir="${build.classes}" includeantruntime="on" debug="true" nowarn="true" encoding="utf-8">
+			<classpath refid="classpath" />
+		</javac>
+		<copy todir="${build.classes}">
+			<fileset dir="${conf}">
+				<include name="**/*.*" />
+			</fileset>
+			<fileset dir="${src}">
+				<include name="**/*.hbm.xml" />
+			</fileset>
+		</copy>
+	</target>
+	<!-- 国际化资源 -->
+	<target name="i18n">
+		<exec dir="." executable="native2ascii.exe" output="native2ascii.txt">
+			<arg line="-encoding utf-8 src/cjp/config/ApplicationResources_zh_CN.src src/cjp/config/ApplicationResources_zh_CN.properties" />
+		</exec>
+	</target>
+	<!-- 发布应用 -->
+	<target name="publish" depends="build">
+		<mkdir dir="${web.lib}" />
+			<copy todir="${web.lib}">
+				<fileset dir="${lib}/hibernate" includes="*.jar" />
+				<fileset dir="${lib}/spring" includes="*.jar" />
+				<fileset dir="${lib}/commons" includes="*.jar" />
+				<fileset dir="${lib}/drivers" includes="*.jar" />
+				<fileset dir="${lib}/utils" includes="*.jar" />
+			</copy>
+		<mkdir dir="${web.classes}" />
+		<copy todir="${web.classes}">
+			<fileset dir="${build.classes}">
+				<include name="**/*.*" />
+			</fileset>
+		</copy>
+		
+	</target>
+	<!--开发部署应用，并需在容器内测试,将copy到容器内-->
+	<target name="deploy" depends="publish">
+	</target>
+	
+	<!-- 清空 -->
+	<target name="clean">
+		<delete dir="${web.classes}" />
+		<delete dir="${web.lib}" />
+		<delete dir="${build}" />
+		<delete>
+			<fileset dir="${web.info}">
+				<exclude name="web.xml"/>
+				<include name="*.*" />
+			</fileset>
+		</delete>
+		<delete dir="${dist}" />
+	</target>
+	<target name="wrap" depends="build">
+		<jar destfile="${dist}/${jar.name}">
+			<fileset dir="${web.classes}" />
+		</jar>
+	</target>
+	<target name="dist" depends="publish,wrap">
+		<war destfile="${dist}/${war.name}">
+			<fileset dir="${web}" />
+		</war>
+	</target>
+</project>

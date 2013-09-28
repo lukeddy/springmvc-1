@@ -1,0 +1,16 @@
+package cjp.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/test")
+public class HelloController {
+	
+	@RequestMapping("/sayHello")
+	public String sayHello(Model model){
+		model.addAttribute("word", "你好--Spring MVC 世界");
+		return "helloWorld";
+	}
+}
